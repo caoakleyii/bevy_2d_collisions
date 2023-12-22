@@ -1,0 +1,17 @@
+[package]
+name = "bevy_2d_collisions"
+description = "Bevy plugin to easily detect aabb collisions"
+keywords = ["gamedev", "collision", "bevy", "aabb"]
+readme = "README.md"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/caoakleyii/bevy_2d_collisions"
+
+[[example]]
+name = "basic"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.12.1"
