@@ -16,7 +16,11 @@ cargo run --example basic
 # Usage
 ```rs
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_2d_collisions::{CollisionBox, CollisionEvent, CollisionGroup, CollisionsPlugin};
+use bevy_2d_collisions::{
+    components::{CollisionBox, CollisionBundle, CollisionGroup},
+    events::CollisionBegin,
+    CollisionsPlugin,
+};
 
 fn main() {
     let mut app = App::new();
@@ -50,14 +54,18 @@ fn spawn_player(asset_server: Res<AssetServer>, mut commands: Commands) {
     commands
         .spawn(SpriteBundle {
             texture: texture_handle,
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
             ..Default::default()
         })
         .insert(Velocity(Vec2::new(0.0, 0.0)))
-        .insert(CollisionBox {
-            size: Vec2::new(32.0, 32.0),
+        .insert(CollisionBundle {
+            collision_box: CollisionBox {
+                size: Vec2::new(32.0, 32.0),
+                ..Default::default()
+            },
+            collision_group: CollisionGroup { layer: 0, mask: 2 },
             ..Default::default()
         })
-        .insert(CollisionGroup { layer: 0, mask: 2 })
         .insert(Player);
 }
 
@@ -77,21 +85,24 @@ fn spawn_enemy(asset_server: Res<AssetServer>, mut commands: Commands) {
                     ..Default::default()
                 })
                 .insert(Velocity(Vec2::new(0.0, 0.0)))
-                .insert(CollisionBox {
-                    size: Vec2::new(32.0, 32.0),
+                .insert(CollisionBundle {
+                    collision_box: CollisionBox {
+                        size: Vec2::new(32.0, 32.0),
+                        ..Default::default()
+                    },
+                    collision_group: CollisionGroup { layer: 1, mask: 2 },
                     ..Default::default()
                 })
-                .insert(CollisionGroup { layer: 1, mask: 2 })
                 .insert(Enemy);
         }
     }
 }
 
-fn collision_events(mut events: EventReader<CollisionEvent>, mut command: Commands) {
+fn collision_events(mut events: EventReader<CollisionBegin>, mut command: Commands) {
     for event in events.read() {
+        println!("{:?}", event);
         command.entity(event.entity_a).despawn();
         command.entity(event.entity_b).despawn();
-        println!("{:?}", event);
     }
 }
 
@@ -163,11 +174,14 @@ fn shoot_inputs(
                     angle.cos() * 500.0,
                     angle.sin() * 500.0,
                 )))
-                .insert(CollisionBox {
-                    size: Vec2::new(8.0, 8.0),
+                .insert(CollisionBundle {
+                    collision_box: CollisionBox {
+                        size: Vec2::new(8.0, 8.0),
+                        ..Default::default()
+                    },
+                    collision_group: CollisionGroup { layer: 2, mask: 1 },
                     ..Default::default()
-                })
-                .insert(CollisionGroup { layer: 2, mask: 1 });
+                });
         }
     }
 }
