@@ -94,35 +94,77 @@ impl CollisionsPlugin {
                     continue;
                 }
 
-                if !group.can_see(other_group) || !other_group.can_see(group) {
-                    continue;
+                if group.can_see(other_group) {
+                    Self::handle_collision(
+                        entity,
+                        other_entity,
+                        &mut collision_map,
+                        &mut ew_collision_events,
+                        &mut ew_collision_begin_events,
+                        &mut eq_collision_end_events,
+                        transform,
+                        collision_box,
+                        other_transform,
+                        other_box,
+                        key,
+                    );
                 }
-
-                let collision =
-                    Self::check_collision(transform, collision_box, other_transform, other_box);
-                if collision.is_some() {
-                    if collision_map.map.contains_key(&key) {
-                        ew_collision_events.send(CollisionEvent {
-                            entity_a: entity,
-                            entity_b: other_entity,
-                        });
-                    } else {
-                        ew_collision_begin_events.send(CollisionBegin {
-                            entity_a: entity,
-                            entity_b: other_entity,
-                        });
-
-                        collision_map.map.insert(key, true);
-                    }
-                } else {
-                    if collision_map.map.contains_key(&key) {
-                        eq_collision_end_events.send(CollisionEnd {
-                            entity_a: entity,
-                            entity_b: other_entity,
-                        });
-                        collision_map.map.remove(&key);
-                    }
+                if other_group.can_see(group) {
+                    Self::handle_collision(
+                        other_entity,
+                        entity,
+                        &mut collision_map,
+                        &mut ew_collision_events,
+                        &mut ew_collision_begin_events,
+                        &mut eq_collision_end_events,
+                        other_transform,
+                        other_box,
+                        transform,
+                        collision_box,
+                        key,
+                    );
                 }
+            }
+        }
+    }
+
+    fn handle_collision(
+        entity: Entity,
+        other_entity: Entity,
+        collision_map: &mut CollisionMap,
+        ew_collision_events: &mut EventWriter<CollisionEvent>,
+        ew_collision_begin_events: &mut EventWriter<CollisionBegin>,
+        eq_collision_end_events: &mut EventWriter<CollisionEnd>,
+        transform: &Transform,
+        collision_box: &CollisionBox,
+        other_transform: &Transform,
+        other_box: &CollisionBox,
+        key: CollisionMapKey,
+    ) {
+        let collision = Self::check_collision(transform, collision_box, other_transform, other_box);
+        if let Some(collision) = collision {
+            if collision_map.map.contains_key(&key) {
+                ew_collision_events.send(CollisionEvent {
+                    entity,
+                    detected: other_entity,
+                    location: collision,
+                });
+            } else {
+                ew_collision_begin_events.send(CollisionBegin {
+                    entity,
+                    detected: other_entity,
+                    location: collision,
+                });
+
+                collision_map.map.insert(key, true);
+            }
+        } else {
+            if collision_map.map.contains_key(&key) {
+                eq_collision_end_events.send(CollisionEnd {
+                    entity,
+                    left: other_entity,
+                });
+                collision_map.map.remove(&key);
             }
         }
     }
@@ -132,16 +174,10 @@ impl CollisionsPlugin {
         mut query: Query<&mut Collisions>,
     ) {
         for event in er_collision_begin_events.read() {
-            if let Ok(mut collisions) = query.get_mut(event.entity_a) {
+            if let Ok(mut collisions) = query.get_mut(event.entity) {
                 collisions
                     .map
-                    .insert(event.entity_b, components::Collision::new(event.entity_b));
-            }
-
-            if let Ok(mut collisions) = query.get_mut(event.entity_b) {
-                collisions
-                    .map
-                    .insert(event.entity_a, components::Collision::new(event.entity_a));
+                    .insert(event.detected, components::Collision::new(event.detected));
             }
         }
     }
@@ -151,12 +187,8 @@ impl CollisionsPlugin {
         mut query: Query<&mut Collisions>,
     ) {
         for event in er_collision_end_events.read() {
-            if let Ok(mut collisions) = query.get_mut(event.entity_a) {
-                collisions.map.remove(&event.entity_b);
-            }
-
-            if let Ok(mut collisions) = query.get_mut(event.entity_b) {
-                collisions.map.remove(&event.entity_a);
+            if let Ok(mut collisions) = query.get_mut(event.entity) {
+                collisions.map.remove(&event.left);
             }
         }
     }

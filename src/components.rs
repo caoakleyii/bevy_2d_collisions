@@ -29,7 +29,7 @@ pub struct CollisionGroup {
 
 impl CollisionGroup {
     pub fn can_see(&self, other: &CollisionGroup) -> bool {
-        (self.mask & other.layer) != 0
+        self.mask & other.layer != 0
     }
 }
 

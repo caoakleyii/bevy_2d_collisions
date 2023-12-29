@@ -46,7 +46,7 @@ fn spawn_player(asset_server: Res<AssetServer>, mut commands: Commands) {
                 size: Vec2::new(32.0, 32.0),
                 ..Default::default()
             },
-            collision_group: CollisionGroup { layer: 0, mask: 2 },
+            collision_group: CollisionGroup { layer: 0, mask: 0 },
             ..Default::default()
         })
         .insert(Player);
@@ -73,7 +73,7 @@ fn spawn_enemy(asset_server: Res<AssetServer>, mut commands: Commands) {
                         size: Vec2::new(32.0, 32.0),
                         ..Default::default()
                     },
-                    collision_group: CollisionGroup { layer: 1, mask: 2 },
+                    collision_group: CollisionGroup { layer: 1, mask: 0 },
                     ..Default::default()
                 })
                 .insert(Enemy);
@@ -84,8 +84,8 @@ fn spawn_enemy(asset_server: Res<AssetServer>, mut commands: Commands) {
 fn collision_events(mut events: EventReader<CollisionBegin>, mut command: Commands) {
     for event in events.read() {
         println!("{:?}", event);
-        command.entity(event.entity_a).despawn();
-        command.entity(event.entity_b).despawn();
+        command.entity(event.entity).despawn();
+        command.entity(event.detected).despawn();
     }
 }
 
