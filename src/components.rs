@@ -14,14 +14,14 @@ pub struct CollisionBundle {
     pub collisions: Collisions,
 }
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Debug, Clone, Copy, PartialEq)]
 pub struct CollisionBox {
     pub size: Vec2,
 
     pub disabled: bool,
 }
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CollisionGroup {
     pub layer: u32,
     pub mask: u32,
