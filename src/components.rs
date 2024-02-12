@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-
 use bevy::{
     ecs::{bundle::Bundle, component::Component, entity::Entity},
     math::Vec2,
 };
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Bundle, Default, Debug)]
 pub struct CollisionBundle {
@@ -14,14 +14,14 @@ pub struct CollisionBundle {
     pub collisions: Collisions,
 }
 
-#[derive(Component, Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Serialize, Deserialize, Component, Default, Debug, Clone, Copy, PartialEq)]
 pub struct CollisionBox {
     pub size: Vec2,
 
     pub disabled: bool,
 }
 
-#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Component, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CollisionGroup {
     pub layer: u32,
     pub mask: u32,

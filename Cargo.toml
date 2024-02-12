@@ -15,3 +15,5 @@ name = "basic"
 
 [dependencies]
 bevy = "0.12.1"
+serde = { version = "1.0.190", features = ["derive"] }
+serde_json = "1.0.113"
