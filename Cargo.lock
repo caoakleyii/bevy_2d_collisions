@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_2d_collisions"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "bevy",
  "serde",
