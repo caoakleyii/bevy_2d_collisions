@@ -5,7 +5,7 @@ use bevy::{
         event::{EventReader, EventWriter},
         system::{Query, ResMut},
     },
-    sprite::collide_aabb::{collide, Collision},
+    math::bounding::{Aabb2d, IntersectsVolume},
     transform::components::Transform,
 };
 use components::{CollisionBox, CollisionGroup, Collisions};
@@ -50,6 +50,14 @@ impl HashTrait for CollisionMapKey {
     }
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub enum CollisionDirection {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
 pub struct CollisionsPlugin;
 
 impl Plugin for CollisionsPlugin {
@@ -85,9 +93,8 @@ impl CollisionsPlugin {
                 let key = CollisionMapKey::new(entity, other_entity);
                 if checked_entities.contains_key(&key) {
                     continue;
-                } else {
-                    checked_entities.insert(key, true);
                 }
+                checked_entities.insert(key, true);
 
                 if collision_box.disabled || other_box.disabled {
                     // TODO: Bug here, if one of the boxes is disabled, the end collision will not be detected
@@ -198,12 +205,30 @@ impl CollisionsPlugin {
         a_box: &CollisionBox,
         b_transform: &Transform,
         b_box: &CollisionBox,
-    ) -> Option<Collision> {
-        collide(
-            a_transform.translation,
-            a_box.size,
-            b_transform.translation,
-            b_box.size,
-        )
+    ) -> Option<CollisionDirection> {
+        let collision =
+            Aabb2d::new(a_transform.translation.truncate(), a_box.size / 2.).intersects(
+                &Aabb2d::new(b_transform.translation.truncate(), b_box.size / 2.),
+            );
+
+        if collision {
+            let a_pos = a_transform.translation.truncate();
+            let b_pos = b_transform.translation.truncate();
+            let offset = a_pos - b_pos;
+            let side = if offset.x.abs() > offset.y.abs() {
+                if a_pos.x < b_pos.x {
+                    CollisionDirection::Left
+                } else {
+                    CollisionDirection::Right
+                }
+            } else if a_pos.y < b_pos.y {
+                CollisionDirection::Bottom
+            } else {
+                CollisionDirection::Top
+            };
+            Some(side)
+        } else {
+            None
+        }
     }
 }

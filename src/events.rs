@@ -1,20 +1,19 @@
-use bevy::{
-    ecs::{entity::Entity, event::Event},
-    sprite::collide_aabb::Collision,
-};
+use bevy::ecs::{entity::Entity, event::Event};
+
+use crate::CollisionDirection;
 
 #[derive(Event, Debug)]
 pub struct CollisionBegin {
     pub entity: Entity,
     pub detected: Entity,
-    pub location: Collision,
+    pub location: CollisionDirection,
 }
 
 #[derive(Event, Debug)]
 pub struct CollisionEvent {
     pub entity: Entity,
     pub detected: Entity,
-    pub location: Collision,
+    pub location: CollisionDirection,
 }
 
 #[derive(Event, Debug)]

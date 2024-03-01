@@ -89,21 +89,24 @@ fn collision_events(mut events: EventReader<CollisionBegin>, mut command: Comman
     }
 }
 
-fn move_inputs(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Velocity, With<Player>>) {
+fn move_inputs(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<&mut Velocity, With<Player>>,
+) {
     for mut velocity in query.iter_mut() {
         let mut fx = 0.0;
         let mut fy = 0.0;
 
-        if keyboard_input.pressed(KeyCode::A) {
+        if keyboard_input.pressed(KeyCode::KeyA) {
             fx -= 1.0;
         }
-        if keyboard_input.pressed(KeyCode::D) {
+        if keyboard_input.pressed(KeyCode::KeyD) {
             fx += 1.0;
         }
-        if keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::KeyW) {
             fy += 1.0;
         }
-        if keyboard_input.pressed(KeyCode::S) {
+        if keyboard_input.pressed(KeyCode::KeyS) {
             fy -= 1.0;
         }
 
@@ -115,7 +118,7 @@ fn move_inputs(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Veloci
 
 fn shoot_inputs(
     asset_server: Res<AssetServer>,
-    mouse_input: Res<Input<MouseButton>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
     mut command: Commands,
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
