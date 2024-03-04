@@ -4,7 +4,7 @@ cargo add bevy_2d_collisions
 ```
 
 ```toml
-bevy_2d_collisions = "0.1.0"
+bevy_2d_collisions = "0.3.2"
 ```
 
 # Example
@@ -63,7 +63,7 @@ fn spawn_player(asset_server: Res<AssetServer>, mut commands: Commands) {
                 size: Vec2::new(32.0, 32.0),
                 ..Default::default()
             },
-            collision_group: CollisionGroup { layer: 0, mask: 2 },
+            collision_group: CollisionGroup { layer: 0, mask: 0 },
             ..Default::default()
         })
         .insert(Player);
@@ -90,7 +90,7 @@ fn spawn_enemy(asset_server: Res<AssetServer>, mut commands: Commands) {
                         size: Vec2::new(32.0, 32.0),
                         ..Default::default()
                     },
-                    collision_group: CollisionGroup { layer: 1, mask: 2 },
+                    collision_group: CollisionGroup { layer: 1, mask: 0 },
                     ..Default::default()
                 })
                 .insert(Enemy);
@@ -101,26 +101,29 @@ fn spawn_enemy(asset_server: Res<AssetServer>, mut commands: Commands) {
 fn collision_events(mut events: EventReader<CollisionBegin>, mut command: Commands) {
     for event in events.read() {
         println!("{:?}", event);
-        command.entity(event.entity_a).despawn();
-        command.entity(event.entity_b).despawn();
+        command.entity(event.entity).despawn();
+        command.entity(event.detected).despawn();
     }
 }
 
-fn move_inputs(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Velocity, With<Player>>) {
+fn move_inputs(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<&mut Velocity, With<Player>>,
+) {
     for mut velocity in query.iter_mut() {
         let mut fx = 0.0;
         let mut fy = 0.0;
 
-        if keyboard_input.pressed(KeyCode::A) {
+        if keyboard_input.pressed(KeyCode::KeyA) {
             fx -= 1.0;
         }
-        if keyboard_input.pressed(KeyCode::D) {
+        if keyboard_input.pressed(KeyCode::KeyD) {
             fx += 1.0;
         }
-        if keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::KeyW) {
             fy += 1.0;
         }
-        if keyboard_input.pressed(KeyCode::S) {
+        if keyboard_input.pressed(KeyCode::KeyS) {
             fy -= 1.0;
         }
 
@@ -132,7 +135,7 @@ fn move_inputs(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Veloci
 
 fn shoot_inputs(
     asset_server: Res<AssetServer>,
-    mouse_input: Res<Input<MouseButton>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
     mut command: Commands,
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
@@ -192,5 +195,4 @@ fn physics(dt: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
         transform.translation.y += vel.0.y * dt.delta_seconds();
     }
 }
-
 ```
